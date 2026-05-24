@@ -5,19 +5,23 @@
 // We store the token in cookie + user in localStorage, then redirect to dashboard.
 
 import { useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import {  useRouter } from 'next/navigation';
+// useSearchParams,
 import Cookies from 'js-cookie';
 import { useAuth } from '@/lib/auth-context';
 
-export default function GoogleSuccessPage() {
+export default function GoogleSuccessPage({ searchParams }) {
   const params = useSearchParams();
   const router = useRouter();
   const { setAuth } = useAuth();
 
   useEffect(() => {
-    const token    = params.get('token');
-    const userRaw  = params.get('user');
-    const errorParam = params.get('error');
+    // const token    = params.get('token');
+    // const userRaw  = params.get('user');
+    // const errorParam = params.get('error');
+  const token = searchParams.token;
+  const userRaw = searchParams.user;
+  const errorParam = searchParams.error;
 
     if (errorParam || !token || !userRaw) {
       // OAuth failed — go back to login with error
