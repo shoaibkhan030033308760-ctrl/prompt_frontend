@@ -1,3 +1,4 @@
+"use client";
 // src/lib/api.js
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -22,16 +23,29 @@ export const api = axios.create({
 });
 
 // Attach auth token + guest ID on every request
-api.interceptors.request.use((config) => {
-  const token = Cookies.get('token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+// api.interceptors.request.use((config) => {
+//   const token = Cookies.get('token');
+//   if (token) config.headers.Authorization = `Bearer ${token}`;
 
-  // Always send guestId if present (backend uses it to track session)
-  const guestId = getGuestId();
-  if (guestId) config.headers['X-Guest-Id'] = guestId;
+//   // Always send guestId if present (backend uses it to track session)
+//   const guestId = getGuestId();
+//   if (guestId) config.headers['X-Guest-Id'] = guestId;
+
+//   return config;
+// });
+
+api.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const token = Cookies.get('token');
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+
+    const guestId = getGuestId();
+    if (guestId) config.headers['X-Guest-Id'] = guestId;
+  }
 
   return config;
 });
+
 
 // Capture X-Guest-Id from response headers and persist it
 api.interceptors.response.use((response) => {
