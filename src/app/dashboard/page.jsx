@@ -6,6 +6,9 @@ import Navbar from '@/components/Navbar';
 import ImageCard from '@/components/ImageCard';
 import { fetchImages, searchImages } from '@/lib/api';
 import { ChevronLeft, ChevronRight, Frown } from 'lucide-react';
+export const dynamic = "force-dynamic";
+
+
 
 function SkeletonCard() {
   return (
