@@ -9,8 +9,6 @@ import { fetchImages, searchImages } from '@/lib/api';
 import { ChevronLeft, ChevronRight, Frown } from 'lucide-react';
 export const dynamic = "force-dynamic";
 
-
-
 function SkeletonCard() {
   return (
     <div className="rounded-xl overflow-hidden border border-border">
@@ -24,7 +22,7 @@ function SkeletonCard() {
 }
 
 export default function DashboardPage({ searchParams }) {
-  const params = useSearchParams();
+  // const params = useSearchParams();
   const router = useRouter();
   // const queryParam = params.get('q') || '';
   const queryParam = searchParams.q || '';
