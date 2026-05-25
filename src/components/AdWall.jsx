@@ -4,9 +4,10 @@ import { useEffect } from 'react';
 import { useMoneyTag } from '@/hooks/useMoneyTag';
 import { Play, Loader2, CheckCircle, XCircle, Lock } from 'lucide-react';
 
-export default function AdWall({ imageUrl, onUnlocked, onClose }) {
-  const { adState, showAd } = useMoneyTag();
-  // FIX: use useEffect instead of raw setTimeout in render — avoids memory leak
+// isGuest prop passed from ImageCard so we call the right backend endpoint
+export default function AdWall({ imageUrl, onUnlocked, onClose, isGuest = false }) {
+  const { adState, showAd } = useMoneyTag(isGuest);
+
   useEffect(() => {
     if (adState === 'completed') {
       const t = setTimeout(onUnlocked, 800);
@@ -74,7 +75,7 @@ function AdStateContent({ adState, showAd }) {
           className="w-full flex items-center justify-center gap-2 bg-ink text-paper font-medium py-3 px-6 rounded-xl hover:bg-accent-dark transition-colors"
         >
           <Play className="w-4 h-4" />
-          Watch Ad & Unlock
+          Watch Ad &amp; Unlock
         </button>
       </>
     );

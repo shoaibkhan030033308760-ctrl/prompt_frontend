@@ -1,13 +1,11 @@
 'use client';
 // src/app/dashboard/page.jsx
-import { useEffect, useState, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-//  useSearchParams,
+import { useEffect, useState, useCallback, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import ImageCard from '@/components/ImageCard';
 import { fetchImages, searchImages } from '@/lib/api';
 import { ChevronLeft, ChevronRight, Frown } from 'lucide-react';
-export const dynamic = "force-dynamic";
 
 function SkeletonCard() {
   return (
@@ -21,11 +19,10 @@ function SkeletonCard() {
   );
 }
 
-export default function DashboardPage({ searchParams }) {
+function DashboardInner() {
   const params = useSearchParams();
   const router = useRouter();
   const queryParam = params.get('q') || '';
-  // const queryParam = searchParams.q || '';
 
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,9 +34,7 @@ export default function DashboardPage({ searchParams }) {
   const loadImages = useCallback(async (q, p) => {
     setLoading(true);
     try {
-      const data = q
-        ? await searchImages(q, p)
-        : await fetchImages(p);
+      const data = q ? await searchImages(q, p) : await fetchImages(p);
       setImages(data.images || []);
       setTotalPages(data.totalPages || 1);
     } catch {
@@ -64,16 +59,14 @@ export default function DashboardPage({ searchParams }) {
 
       {showAuthBanner && (
         <div className="bg-accent text-ink px-4 py-3 text-center text-sm font-medium flex items-center justify-center gap-3">
-          <span>You've reached the free prompt limit. Sign up for unlimited access!</span>
+          <span>You&apos;ve reached the free prompt limit. Sign up for unlimited access!</span>
           <button
             onClick={() => router.push('/auth/register')}
             className="underline font-semibold"
           >
             Register free →
           </button>
-          <button onClick={() => setShowAuthBanner(false)} className="text-ink/60 hover:text-ink">
-            ✕
-          </button>
+          <button onClick={() => setShowAuthBanner(false)} className="text-ink/60 hover:text-ink">✕</button>
         </div>
       )}
 
@@ -117,9 +110,7 @@ export default function DashboardPage({ searchParams }) {
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="text-sm text-muted font-medium">
-              Page {page} of {totalPages}
-            </span>
+            <span className="text-sm text-muted font-medium">Page {page} of {totalPages}</span>
             <button
               disabled={page === totalPages}
               onClick={() => setPage((p) => p + 1)}
@@ -131,5 +122,29 @@ export default function DashboardPage({ searchParams }) {
         )}
       </main>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen">
+        <div className="sticky top-0 z-40 bg-paper/90 backdrop-blur-md border-b border-border h-14" />
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {Array.from({ length: 20 }).map((_, i) => (
+              <div key={i} className="rounded-xl overflow-hidden border border-border">
+                <div className="aspect-square skeleton" />
+                <div className="px-3 py-2.5 space-y-2">
+                  <div className="h-3 skeleton rounded w-3/4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
+      </div>
+    }>
+      <DashboardInner />
+    </Suspense>
   );
 }

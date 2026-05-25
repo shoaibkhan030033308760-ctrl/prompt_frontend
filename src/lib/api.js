@@ -1,58 +1,42 @@
-"use client";
 // src/lib/api.js
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
 const BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
-// Guest session ID — persisted in localStorage
+// ── Guest session helpers ─────────────────────────────────────
 function getGuestId() {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('guestId') || null;
 }
 
 function saveGuestId(id) {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('guestId', id);
-  }
+  if (typeof window !== 'undefined') localStorage.setItem('guestId', id);
 }
 
+export { getGuestId };
+
+// ── Axios instance ────────────────────────────────────────────
 export const api = axios.create({
   baseURL: BASE,
   withCredentials: true,
 });
 
 // Attach auth token + guest ID on every request
-// api.interceptors.request.use((config) => {
-//   const token = Cookies.get('token');
-//   if (token) config.headers.Authorization = `Bearer ${token}`;
-
-//   // Always send guestId if present (backend uses it to track session)
-//   const guestId = getGuestId();
-//   if (guestId) config.headers['X-Guest-Id'] = guestId;
-
-//   return config;
-// });
-
 api.interceptors.request.use((config) => {
-  if (typeof window !== "undefined") {
-    const token = Cookies.get('token');
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+  const token = Cookies.get('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
 
-    const guestId = getGuestId();
-    if (guestId) config.headers['X-Guest-Id'] = guestId;
-  }
+  const guestId = getGuestId();
+  if (guestId) config.headers['X-Guest-Id'] = guestId;
 
   return config;
 });
 
-
-// Capture X-Guest-Id from response headers and persist it
+// Capture X-Guest-Id returned by backend and persist
 api.interceptors.response.use((response) => {
   const returnedGuestId = response.headers['x-guest-id'];
-  if (returnedGuestId) {
-    saveGuestId(returnedGuestId);
-  }
+  if (returnedGuestId) saveGuestId(returnedGuestId);
   return response;
 });
 
@@ -119,7 +103,6 @@ export async function fetchPrompt(imageId) {
   } catch (err) {
     if (err?.response?.status === 402) return { ok: false, adRequired: true };
     if (err?.response?.status === 403 || err?.response?.status === 429) {
-      // Capture guestId from 429 response body if present
       const guestId = err?.response?.data?.guestId;
       if (guestId) saveGuestId(guestId);
       return { ok: false, guestLimitExceeded: true };
@@ -128,8 +111,15 @@ export async function fetchPrompt(imageId) {
   }
 }
 
+// Mark ad watched — for LOGGED-IN users
 export async function markAdWatched() {
   const res = await api.post('/images/user/ad-watched');
+  return res.data;
+}
+
+// Mark ad watched — for GUESTS (uses X-Guest-Id header auto-attached by interceptor)
+export async function markGuestAdWatched() {
+  const res = await api.post('/images/guest/ad-watched');
   return res.data;
 }
 
@@ -139,7 +129,7 @@ export async function toggleLike(imageId) {
 }
 
 export async function fetchUserLikes(page = 1) {
-  const res = await api.get(`/user/liked`, { params: { page } });
+  const res = await api.get('/user/liked', { params: { page } });
   return res.data;
 }
 

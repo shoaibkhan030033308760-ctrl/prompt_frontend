@@ -1,10 +1,10 @@
 // src/hooks/useMoneyTag.js
-// NOTE: No 'use client' directive here — hooks are imported by client components
 import { useEffect, useRef, useState } from 'react';
-import { markAdWatched } from '@/lib/api';
-export function useMoneyTag() {
-  const [adState, setAdState] = useState('idle'); 
-  // 'idle' | 'loading' | 'playing' | 'completed' | 'error'
+import { markAdWatched, markGuestAdWatched } from '@/lib/api';
+
+// isGuest: true = call /guest/ad-watched, false = call /user/ad-watched
+export function useMoneyTag(isGuest = false) {
+  const [adState, setAdState] = useState('idle'); // 'idle' | 'loading' | 'playing' | 'completed' | 'error'
   const scriptLoaded = useRef(false);
 
   // Load MoneyTag script once on mount
@@ -18,11 +18,11 @@ export function useMoneyTag() {
       return;
     }
 
-    const script    = document.createElement('script');
-    script.src      = scriptUrl;
-    script.async    = true;
-    script.onload   = () => { scriptLoaded.current = true; };
-    script.onerror  = () => { console.error('[MoneyTag] Failed to load ad script'); };
+    const script   = document.createElement('script');
+    script.src     = scriptUrl;
+    script.async   = true;
+    script.onload  = () => { scriptLoaded.current = true; };
+    script.onerror = () => { console.error('[MoneyTag] Failed to load ad script'); };
     document.head.appendChild(script);
   }, []);
 
@@ -42,7 +42,12 @@ export function useMoneyTag() {
       showFn({
         onComplete: async () => {
           try {
-            await markAdWatched();
+            // Call the correct backend endpoint based on user type
+            if (isGuest) {
+              await markGuestAdWatched();
+            } else {
+              await markAdWatched();
+            }
             setAdState('completed');
           } catch {
             setAdState('error');

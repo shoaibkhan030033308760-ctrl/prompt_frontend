@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Heart, Eye, Lock } from 'lucide-react';
 import AdWall from './AdWall';
 import PromptModal from './PromptModal';
-import { fetchPrompt, markAdWatched, toggleLike } from '@/lib/api';
+import { fetchPrompt, toggleLike } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
 export default function ImageCard({ image, onAuthRequired }) {
@@ -16,9 +16,11 @@ export default function ImageCard({ image, onAuthRequired }) {
   const [likeCount,     setLikeCount]     = useState(image.totalLikes);
   const [loadingPrompt, setLoadingPrompt] = useState(false);
 
-  // FIX: Build base URL once
   const BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api').replace(/\/api$/, '');
   const src  = image.imageUrl?.startsWith('http') ? image.imageUrl : `${BASE}${image.imageUrl}`;
+
+  // Guest = not logged in
+  const isGuest = !isLoggedIn;
 
   const handleImageClick = async () => {
     if (loadingPrompt) return;
@@ -28,19 +30,17 @@ export default function ImageCard({ image, onAuthRequired }) {
     setLoadingPrompt(false);
 
     if (result.adRequired) {
-      // Logged-in user: must watch an ad
+      // Both guests and logged-in users see the AdWall
       setShowAdWall(true);
     } else if (result.guestLimitExceeded) {
-      // Guest: hit the 5-prompt limit
       onAuthRequired?.();
     } else if (result.ok) {
-      // Guest (within limit) or user after ad: show prompt directly
       setPromptData(result.data.image);
     }
   };
 
-  // Called by AdWall after markAdWatched succeeds on the backend
-  // Re-fetch prompt now that adWatched = true in DB
+  // After AdWall reports ad completed + backend updated adWatched,
+  // re-fetch the prompt (backend will now serve it and reset adWatched)
   const handleAdUnlocked = async () => {
     setShowAdWall(false);
     setLoadingPrompt(true);
@@ -88,7 +88,7 @@ export default function ImageCard({ image, onAuthRequired }) {
                     )}
                   </div>
                   <span className="text-paper text-xs font-medium bg-ink/60 px-2 py-1 rounded-full">
-                    {isLoggedIn ? 'Watch Ad → View Prompt' : 'View Prompt'}
+                    Watch Ad → View Prompt
                   </span>
                 </>
               )}
@@ -123,6 +123,7 @@ export default function ImageCard({ image, onAuthRequired }) {
           imageUrl={src}
           onUnlocked={handleAdUnlocked}
           onClose={() => setShowAdWall(false)}
+          isGuest={isGuest}
         />
       )}
 
