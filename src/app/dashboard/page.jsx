@@ -1,7 +1,7 @@
 'use client';
 // src/app/dashboard/page.jsx
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 //  useSearchParams,
 import Navbar from '@/components/Navbar';
 import ImageCard from '@/components/ImageCard';
@@ -22,10 +22,10 @@ function SkeletonCard() {
 }
 
 export default function DashboardPage({ searchParams }) {
-  // const params = useSearchParams();
+  const params = useSearchParams();
   const router = useRouter();
-  // const queryParam = params.get('q') || '';
-  const queryParam = searchParams.q || '';
+  const queryParam = params.get('q') || '';
+  // const queryParam = searchParams.q || '';
 
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);

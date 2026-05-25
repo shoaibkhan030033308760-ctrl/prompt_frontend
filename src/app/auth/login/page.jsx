@@ -2,7 +2,7 @@
 // src/app/auth/login/page.jsx
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { login } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -16,9 +16,9 @@ const GOOGLE_ERRORS = {
   google_parse_failed: 'An unexpected error occurred. Please try again.',
 };
 
-export default function LoginPage({ searchParams }) {
+export default function LoginPage() {
   const router      = useRouter();
-  // const params      = useSearchParams();
+  const params      = useSearchParams();
   const { setAuth } = useAuth();
 
   const [email,    setEmail]    = useState('');
@@ -28,25 +28,25 @@ export default function LoginPage({ searchParams }) {
   const [error,    setError]    = useState('');
   const [notice,   setNotice]   = useState('');
 
-  // useEffect(() => {
-  //   if (params.get('verified') === '1') setNotice('Email verified! You can now sign in.');
-  //   if (params.get('reset')    === '1') setNotice('Password reset! You can now sign in with your new password.');
-  //   const errParam = params.get('error');
-  //   if (errParam) setError(GOOGLE_ERRORS[errParam] || 'Sign-in failed. Please try again.');
-  // }, [params]);
-
-
   useEffect(() => {
-  if (searchParams.verified === '1')
-    setNotice('Email verified! You can now sign in.');
+    if (params.get('verified') === '1') setNotice('Email verified! You can now sign in.');
+    if (params.get('reset')    === '1') setNotice('Password reset! You can now sign in with your new password.');
+    const errParam = params.get('error');
+    if (errParam) setError(GOOGLE_ERRORS[errParam] || 'Sign-in failed. Please try again.');
+  }, [params]);
 
-  if (searchParams.reset === '1')
-    setNotice('Password reset! You can now sign in with your new password.');
 
-  const errParam = searchParams.error;
-  if (errParam)
-    setError(GOOGLE_ERRORS[errParam] || 'Sign-in failed.');
-}, [searchParams]);
+//   useEffect(() => {
+//   if (searchParams.verified === '1')
+//     setNotice('Email verified! You can now sign in.');
+
+//   if (searchParams.reset === '1')
+//     setNotice('Password reset! You can now sign in with your new password.');
+
+//   const errParam = searchParams.error;
+//   if (errParam)
+//     setError(GOOGLE_ERRORS[errParam] || 'Sign-in failed.');
+// }, [searchParams]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

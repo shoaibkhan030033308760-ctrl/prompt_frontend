@@ -1,27 +1,30 @@
 'use client';
+// 'use client';
+
+export const dynamic = 'force-dynamic';
 // src/app/auth/google-success/page.jsx
 // Google OAuth callback landing page.
 // Backend redirects here with ?token=...&user=...
 // We store the token in cookie + user in localStorage, then redirect to dashboard.
 
 import { useEffect } from 'react';
-import {  useRouter } from 'next/navigation';
+import {  useRouter, useSearchParams } from 'next/navigation';
 // useSearchParams,
 import Cookies from 'js-cookie';
 import { useAuth } from '@/lib/auth-context';
 
-export default function GoogleSuccessPage({ searchParams }) {
+export default function GoogleSuccessPage() {
   const params = useSearchParams();
   const router = useRouter();
   const { setAuth } = useAuth();
 
   useEffect(() => {
-    // const token    = params.get('token');
-    // const userRaw  = params.get('user');
-    // const errorParam = params.get('error');
-  const token = searchParams.token;
-  const userRaw = searchParams.user;
-  const errorParam = searchParams.error;
+    const token    = params.get('token');
+    const userRaw  = params.get('user');
+    const errorParam = params.get('error');
+  // const token = searchParams.token;
+  // const userRaw = searchParams.user;
+  // const errorParam = searchParams.error;
 
     if (errorParam || !token || !userRaw) {
       // OAuth failed — go back to login with error
