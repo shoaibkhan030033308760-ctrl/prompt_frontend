@@ -9,7 +9,7 @@ import { markAdWatched, markGuestAdWatched } from '@/lib/api';
 import { Lock, ExternalLink, CheckCircle, Loader2, Clock } from 'lucide-react';
 
 const AD_URL = 'https://omg10.com/4/11059140';
-const WAIT_SECONDS = 30; // seconds user must wait before confirming
+const WAIT_SECONDS = 5; // seconds user must wait before confirming
 
 export default function AdWall({ imageUrl, onUnlocked, onClose, isGuest = false }) {
   // states: 'idle' | 'waiting' | 'ready' | 'confirming' | 'done' | 'error'
