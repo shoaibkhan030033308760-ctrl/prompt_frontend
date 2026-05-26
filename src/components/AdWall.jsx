@@ -1,7 +1,8 @@
 'use client';
 // src/components/AdWall.jsx
 import { useEffect, useState, useRef } from 'react';
-import { markAdWatched, markGuestAdWatched } from '@/lib/api';
+// import { markAdWatched, markGuestAdWatched } from '@/lib/api';
+import { markAdWatched, markGuestAdWatched, fetchPrompt } from '@/lib/api';
 import { Lock, ExternalLink, CheckCircle, Loader2, Clock } from 'lucide-react';
 
 const AD_URL = 'https://omg10.com/4/11059140';
@@ -42,7 +43,7 @@ export default function AdWall({ imageUrl, onUnlocked, onClose, isGuest = false,
       }
 
       // Step 2: now fetch the prompt — backend sees adWatched=true, serves it, resets flag
-      const { fetchPrompt } = await import('@/lib/api');
+      // const { fetchPrompt } = await import('@/lib/api');
       const result = await fetchPrompt(imageId);
 
       if (result.ok) {
