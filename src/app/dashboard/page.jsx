@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import ImageCard from '@/components/ImageCard';
 import { fetchImages, searchImages } from '@/lib/api';
-import { ChevronLeft, ChevronRight, Frown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Frown, X } from 'lucide-react';
 
 function SkeletonCard() {
   return (
@@ -20,16 +20,16 @@ function SkeletonCard() {
 }
 
 function DashboardInner() {
-  const params = useSearchParams();
-  const router = useRouter();
+  const params     = useSearchParams();
+  const router     = useRouter();
   const queryParam = params.get('q') || '';
 
-  const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [searchQ, setSearchQ] = useState(queryParam);
-  const [showAuthBanner, setShowAuthBanner] = useState(false);
+  const [images,          setImages]          = useState([]);
+  const [loading,         setLoading]         = useState(true);
+  const [page,            setPage]            = useState(1);
+  const [totalPages,      setTotalPages]      = useState(1);
+  const [searchQ,         setSearchQ]         = useState(queryParam);
+  const [showLimitBanner, setShowLimitBanner] = useState(false);
 
   const loadImages = useCallback(async (q, p) => {
     setLoading(true);
@@ -44,29 +44,27 @@ function DashboardInner() {
     }
   }, []);
 
-  useEffect(() => {
-    loadImages(searchQ, page);
-  }, [searchQ, page, loadImages]);
+  useEffect(() => { loadImages(searchQ, page); }, [searchQ, page, loadImages]);
 
-  const handleSearch = (q) => {
-    setSearchQ(q);
-    setPage(1);
-  };
+  const handleSearch = (q) => { setSearchQ(q); setPage(1); };
 
   return (
     <div className="min-h-screen">
       <Navbar onSearch={handleSearch} />
 
-      {showAuthBanner && (
-        <div className="bg-accent text-ink px-4 py-3 text-center text-sm font-medium flex items-center justify-center gap-3">
-          <span>You&apos;ve reached the free prompt limit. Sign up for unlimited access!</span>
+      {/* Guest prompt limit banner */}
+      {showLimitBanner && (
+        <div className="bg-accent/90 text-ink px-4 py-3 flex items-center justify-center gap-3 text-sm font-medium">
+          <span>🔒 You&apos;ve viewed 5 free prompts. Register for unlimited access!</span>
           <button
             onClick={() => router.push('/auth/register')}
-            className="underline font-semibold"
+            className="bg-ink text-paper px-3 py-1 rounded-lg text-xs font-semibold hover:opacity-90 transition-opacity"
           >
-            Register free →
+            Register Free →
           </button>
-          <button onClick={() => setShowAuthBanner(false)} className="text-ink/60 hover:text-ink">✕</button>
+          <button onClick={() => setShowLimitBanner(false)} className="text-ink/60 hover:text-ink ml-1">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
@@ -78,7 +76,7 @@ function DashboardInner() {
           <p className="text-muted text-sm">
             {searchQ
               ? 'Click any image to watch a short ad and reveal the prompt.'
-              : 'Discover hand-picked AI prompts. Click to unlock.'}
+              : 'Discover hand-picked AI prompts. Click any image to unlock.'}
           </p>
         </div>
 
@@ -95,7 +93,10 @@ function DashboardInner() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {images.map((img, i) => (
               <div key={img.id} className="animate-fade-up" style={{ animationDelay: `${i * 30}ms` }}>
-                <ImageCard image={img} onAuthRequired={() => setShowAuthBanner(true)} />
+                <ImageCard
+                  image={img}
+                  onPromptLimitReached={() => setShowLimitBanner(true)}
+                />
               </div>
             ))}
           </div>
@@ -135,9 +136,7 @@ export default function DashboardPage() {
             {Array.from({ length: 20 }).map((_, i) => (
               <div key={i} className="rounded-xl overflow-hidden border border-border">
                 <div className="aspect-square skeleton" />
-                <div className="px-3 py-2.5 space-y-2">
-                  <div className="h-3 skeleton rounded w-3/4" />
-                </div>
+                <div className="px-3 py-2.5"><div className="h-3 skeleton rounded w-3/4" /></div>
               </div>
             ))}
           </div>
